@@ -386,9 +386,9 @@ def destroy_model(id):
 
 ### Static files
 
-- [ ] add [static](static) directory. File structure should look like this:
+- [ ] add [static](flask_app/static) directory. File structure should look like this:
 
-![](static/images/static-file.png)
+![](flask_app/static/images/static-file.png)
 
 ## Start the server
 
