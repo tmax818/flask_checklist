@@ -14,7 +14,7 @@ pipenv install flask pymysql
 pipenv shell
 ```
 
-- [ ] create [server.py](server.py):
+- [ ] create [server.py](server.py) with the following content:
 
 ```py
 from flask_app import app
@@ -25,7 +25,7 @@ if __name__=="__main__":
 ```
 **[server.py](server.py) is subject to SEVERAL modifications!!!**
 
-- [ ] create database connection with [mysqlconnection.py](flask_app/config/mysqlconnection.py):
+- [ ] create database connection with [mysqlconnection.py](flask_app/config/mysqlconnection.py) with the following content:
 
 ```py
 # a cursor is the object we use to interact with the database
@@ -77,7 +77,7 @@ def connectToMySQL(db):
 ## Create `flask_app` Package
 
 - all flask files except `server.py` will now be in [flask_app](flask_app/__init__.py)
-- the [`__init__.py`](./flask_app/__init__.py) is what makes `flask_app` a package. It has the following content:
+- [ ] the [`__init__.py`](./flask_app/__init__.py) is what makes `flask_app` a package. It has the following content:
 
 ```py
 from flask import Flask, render_template, request, redirect
@@ -86,7 +86,7 @@ app = Flask(__name__)
 ```
 ### Models
 
-- add a [models](flask_app/models/model.py) directory
+- [ ] add a [models](flask_app/models/model.py) directory with the following content:
 
 ```py
 from flask_app.config.mysqlconnection import connectToMySQL
@@ -145,7 +145,7 @@ class Model:
 
 #### Index
 
-- [ ] create a [templates](flask_app/templates/index.html) directory:
+- [ ] create a [templates](flask_app/templates/index.html) directory with an `index.html` file as follows:
 
 ```html
 <!DOCTYPE html>
@@ -168,7 +168,7 @@ class Model:
 
 #### Models (show all models)
 
-- [x] add [models.html](flask_app/templates/models.html):
+- [ ] add [models.html](flask_app/templates/models.html):
 
 ```html
 <!DOCTYPE html>
@@ -215,7 +215,7 @@ class Model:
 ```
 #### New (create a model)
 
-  - [x] add [new_model.html](flask_app/templates/new_model.html):
+  - [ ] add [new_model.html](flask_app/templates/new_model.html):
 
 ```html
 <!DOCTYPE html>
