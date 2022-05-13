@@ -1,5 +1,9 @@
 # flask_checklist
 
+# Set Up Database
+
+- [ ] create a sample [database](db/checklist.sql) to work with your sample app.
+
 ## Initial Setup
 
 - [x] create directory
