@@ -6,7 +6,7 @@
 - [ ] create the virtual environment:
 
 ```
-pipenv install flask pymysql
+pipenv install flask pymysql flask-bcrypt
 ```
 - [ ] activate the virtual environment:
 
@@ -18,7 +18,7 @@ pipenv shell
 
 ```py
 from flask_app import app
-from flask_app.controllers import models
+from flask_app.controllers import models, users
 
 if __name__=="__main__":    
     app.run(debug=True)
@@ -244,34 +244,43 @@ class Model:
     <title>models</title>
 </head>
 <body>
-    <h1 class="text-center">Here are our models!!!</h1>
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>Column One</th>
-                <th>Column Two</th>
-                <th>Column Three</th>
-                <th>Created At</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for model in models %}
-            <tr>
-                <td>{{ model.column1 }}</td>
-                <td>{{ model.column2 }}</td>
-                <td>{{ model.column3}}</td>
-                <td>{{ model.created_at.strftime("%b %d %Y") }}</td>
-                <td>
-                    <a href="/model/show/{{ model.id }}">Show</a> |
-                    <a href="/model/edit/{{ model.id }}">Edit</a> |
-                    <a href="/model/destroy/{{ model.id }}">Delete</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="/model/new" class="btn btn-primary">Add a model</a>
+    <div class="container">
+        <div class="row"></div>
+            <div class="float-end mt-3 mb-3">
+                <a class="btn btn-danger" href="/logout">logout</a>
+                <a class="btn btn-secondary" href="/models">home</a>
+            </div>
+
+            <h1 class="text-center">Here are our models!!!</h1>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Column One</th>
+                        <th>Column Two</th>
+                        <th>Column Three</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for model in models %}
+                    <tr>
+                        <td>{{ model.column1 }}</td>
+                        <td>{{ model.column2 }}</td>
+                        <td>{{ model.column3}}</td>
+                    <td>{{ model.created_at.strftime("%b %d %Y") }}</td>
+                    <td>
+                        <a href="/model/show/{{ model.id }}">Show</a> |
+                        <a href="/model/edit/{{ model.id }}">Edit</a> |
+                        <a href="/model/destroy/{{ model.id }}">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="/model/new" class="btn btn-primary">Add a model</a>
+    </div>
+
 </body>
 </html>
 ```
@@ -291,12 +300,16 @@ class Model:
     <title>Create model</title>
 </head>
 <body>
-
-    <form action="/model/create" method="post" class="col-6 mx-auto">
-        <h2 class="text-center">Add model</h2>
-        <div class="form-group">
-            <label for="column1">column1:</label>
-            <input type="text" name="column1"  class="form-control">
+    <div class="container">
+        <div class="float-end mt-3 mb-3">
+            <a class="btn btn-danger" href="/logout">logout</a>
+            <a class="btn btn-secondary" href="/models">home</a>
+        </div>
+        <form action="/model/create" method="post" class="col-6 mx-auto">
+            <h2 class="text-center">Add model</h2>
+            <div class="form-group">
+                <label for="column1">column1:</label>
+                <input type="text" name="column1"  class="form-control">
         </div>
         <div class="form-group">
             <label for="column2">column2:</label>
@@ -308,6 +321,7 @@ class Model:
         </div>
         <input type="submit" value="Add model" class="btn btn-success">
     </form>
+</div>
 </body>
 </html>
 ```
@@ -328,9 +342,13 @@ class Model:
     <title>Edit model</title>
 </head>
 <body>
-
-    <form action="/model/update" method="post" class="col-6 mx-auto">
-        <h2 class="text-center">Edit {{model.id}}</h2>
+    <div class="container">
+        <div class="float-end mt-3 mb-3">
+            <a class="btn btn-danger" href="/logout">logout</a>
+            <a class="btn btn-secondary" href="/models">home</a>
+        </div>
+        <form action="/model/update" method="post" class="col-6 mx-auto">
+            <h2 class="text-center">Edit {{model.id}}</h2>
         <input type="hidden" name="id" value={{model.id}}>
         <div class="form-group">
             <label for="column1">column1:</label>
@@ -346,6 +364,7 @@ class Model:
         </div>
         <input type="submit" value="Update model" class="btn btn-success">
     </form>
+</div>
 </body>
 </html>
 ```
@@ -365,13 +384,19 @@ class Model:
     <title>model</title>
 </head>
 <body>
-    <h2 class="text-center">model {{model.id}}</h2>
-    <p>column1 {{model.column1}}</p>
-    <p>column2: {{model.column2}}</p>
-    <p>column3: {{model.column3}}</p>
-
-    <p>Created ON: {{model.created_at.strftime("%b %d %Y")}}</p>
-    <p>Last Updated: {{  model.updated_at.strftime("%b %d %Y")}}</p>
+    <div class="container">
+        <div class="float-end mt-3 mb-3">
+            <a class="btn btn-danger" href="/logout">logout</a>
+            <a class="btn btn-secondary" href="/models">home</a>
+        </div>
+        <h2 class="text-center">model {{model.id}}</h2>
+        <p>column1 {{model.column1}}</p>
+        <p>column2: {{model.column2}}</p>
+        <p>column3: {{model.column3}}</p>
+        
+        <p>Created ON: {{model.created_at.strftime("%b %d %Y")}}</p>
+        <p>Last Updated: {{  model.updated_at.strftime("%b %d %Y")}}</p>
+    </div>
 </body>
 </html>
 ```
@@ -398,12 +423,6 @@ def new_model():
 def create_model():
     print(request.form)
     Model.save(request.form)
-    return redirect('/models')
-
-# ! ////// READ/RETRIEVE //////
-# TODO ROOT ROUTE
-@app.route('/')
-def index():
     return redirect('/models')
 
 # TODO READ ALL
