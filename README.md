@@ -80,9 +80,15 @@ def connectToMySQL(db):
 - [ ] the [`__init__.py`](./flask_app/__init__.py) is what makes `flask_app` a package. It has the following content:
 
 ```py
-from flask import Flask, render_template, request, redirect
-
+from flask import Flask, session, flash
+from flask_bcrypt import Bcrypt
+import re
 app = Flask(__name__)
+
+
+app.secret_key = "asdfasdf a sdfasd fadsfasdfasdf"
+
+bcrypt = Bcrypt(app)
 ```
 ### Models
 
@@ -123,7 +129,7 @@ class Model:
     # ! READ/RETRIEVE ONE
     @classmethod
     def get_one(cls,data:dict) -> object:
-        query  = "SELECT * FROM models WHERE id = %(id)s";
+        query  = "SELECT * FROM models WHERE id = %(id)s;"
         result = connectToMySQL(DATABASE).query_db(query,data)
         return cls(result[0])
 
@@ -154,14 +160,70 @@ class Model:
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='javaScript/index.js') }}"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <title>index</title>
 </head>
 <body>
-    <h1>Index</h1>
-
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h1>Register</h1>
+                <p class="text-right"><a href="/">Home</a></p>
+                {% with messages = get_flashed_messages() %}    
+                {% if messages %}                        
+                    {% for message in messages %}     
+                        <p>{{message}}</p>          
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+                <form action="/register/user" method="post">
+                  <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" class="form-control" placeholder="first name" name="first_name"> 
+                  </div>
+                  <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" class="form-control" placeholder="last name" name="last_name"> 
+                  </div>
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="text" class="form-control" placeholder="email" name="email"> 
+                  </div>
+                  <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-control" placeholder="Password" value="password" name="password">
+                  </div>
+                  <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" class="form-control" placeholder="Password" value="password" name="confirm-password">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+            <div class="col">
+                <h1>Login</h1>
+                <p class="text-right"><a href="/">Home</a></p>
+                {% with messages = get_flashed_messages() %}    
+                {% if messages %}                        
+                    {% for message in messages %}     
+                        <p>{{message}}</p>          
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+                <form action="/login" method="post">
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="text" class="form-control" placeholder="email" name="email"> 
+                  </div>
+                  <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-control" placeholder="Password" value="password" name="password">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 ```
@@ -397,6 +459,116 @@ python server.py
 ```
  - [ ] visit [localhost:5000](http://localhost:5000/)
 
+# Registration and Login
+
+- [ ] install bcrypt:
+
+```
+pipenv install flask-bcrypt
+```
+
+- [ ] add a [users.py](flask_app/controllers/users.py) controller with the following content:
+
+```py
+from flask import render_template, request, redirect, session, flash
+from flask_app import app, bcrypt
+from flask_app.models.user import User
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route("/register/user", methods=['POST'])
+def register():
+    print(request.form)
+    if not User.validate_user(request.form):
+        return redirect('/logout')
+    pw_hash = bcrypt.generate_password_hash(request.form['password'])
+    print(pw_hash)
+    data = {
+        "first_name": request.form['first_name'],
+        "last_name": request.form['last_name'],
+        "email": request.form['email'],
+        "password" : pw_hash
+    }
+    user_id = User.save(data)
+    session['user_id'] = user_id
+    return redirect('/models')
+
+@app.route('/login', methods=['post'])
+def login():
+    data = {'email': request.form['email']}
+    user_in_db = User.get_by_email(data)
+    if not user_in_db:
+        flash('invalid credentials')
+        return redirect('/')
+    if not bcrypt.check_password_hash(user_in_db.password, request.form['password']):
+        return redirect('/')
+    session['user_id'] = user_in_db.id
+    session['first_name'] = user_in_db.first_name
+    return redirect('/models')
+
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
+```
+
+- [ ] add a [user.py](flask_app/models/user.py) model with the following content:
+
+```py
+from flask_app.config.mysqlconnection import connectToMySQL
+from flask_app import flash, re
+
+
+DATABASE = 'checklist'
+EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$') 
+
+class User:
+    def __init__( self , data ):
+        self.id = data['id']
+        self.first_name = data['first_name']
+        self.last_name = data['last_name']
+        self.email = data['email']
+        self.password = data['password']
+        self.created_at = data['created_at']
+        self.updated_at = data['updated_at']
+    
+    @classmethod
+    def save(cls, data:dict ) -> int:
+        query = "INSERT INTO users (first_name, last_name, email, password) VALUES ( %(first_name)s, %(last_name)s, %(email)s, %(password)s);"
+        return connectToMySQL(DATABASE).query_db( query, data )
+
+    ## ! used in user validation
+    @classmethod
+    def get_by_email(cls,data:dict) -> object or bool:
+        query = "SELECT * FROM users WHERE email = %(email)s;"
+        result = connectToMySQL(DATABASE).query_db(query,data)
+        print(result)
+        # Didn't find a matching user
+        if len(result) < 1:
+            return False
+        return cls(result[0])
+
+    @staticmethod
+    def validate_user(user:dict) -> bool:
+        is_valid = True # ! we assume this is true
+        if len(user['first_name']) < 3:
+            flash("Name must be at least 3 characters.")
+            is_valid = False
+        if len(user['last_name']) < 3:
+            flash("Name must be at least 3 characters.")
+            is_valid = False
+        if not EMAIL_REGEX.match(user['email']): 
+            flash("Invalid email address!")
+            is_valid = False
+        if user['password'] != user['confirm-password']:
+            flash("Passwords do not match")
+            is_valid = False
+        return is_valid
+```
 
 
 
