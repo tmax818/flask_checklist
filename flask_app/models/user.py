@@ -1,9 +1,9 @@
 from flask_app.config.mysqlconnection import connectToMySQL
 from flask_app import flash, re
 from pprint import pprint
-from flask_app.models.model import Model
+from flask_app.models.thing import Thing
 
-DATABASE = 'checklist'
+DATABASE = 'template'
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$') 
 
 class User:
@@ -13,7 +13,7 @@ class User:
         self.last_name = data['last_name']
         self.email = data['email']
         self.password = data['password']
-        self.models = []
+        self.things = []
         self.created_at = data['created_at']
         self.updated_at = data['updated_at']
     
@@ -34,22 +34,23 @@ class User:
         return cls(result[0])
 
     @classmethod
-    def get_user_with_models(cls, data:dict):
-        query = "SELECT * FROM users LEFT JOIN models ON users.id = models.user_id WHERE users.id = %(id)s;"
+    def get_user_with_things(cls, data:dict):
+        query = "SELECT * FROM users LEFT JOIN things ON users.id = things.user_id WHERE users.id = %(id)s;"
         results = connectToMySQL(DATABASE).query_db(query,data)
         pprint(results)
         user = cls(results[0])
         for result in results:
-            model_dict = {
-                'id': result['models.id'],
+            thing_dict = {
+                'id': result['things.id'],
                 'column1': result['column1'],
                 'column2': result['column2'],
                 'column3': result['column3'],
+                'column4': result['column4'],
                 'user_id': result['user_id'],
-                'created_at': result['models.created_at'],
-                'updated_at': result['models.updated_at']
+                'created_at': result['things.created_at'],
+                'updated_at': result['things.updated_at']
             }
-            user.models.append(Model(model_dict))
+            user.things.append(Thing(thing_dict))
         return user
 
 

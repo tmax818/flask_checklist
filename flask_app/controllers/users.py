@@ -22,7 +22,7 @@ def register():
     user_id = User.save(data)
     session['user_id'] = user_id
     session['user_name'] = f"{request.form['first_name']} {request.form['last_name']}"
-    return redirect('/models')
+    return redirect('/things')
 
 @app.route('/login', methods=['post'])
 def login():
@@ -36,13 +36,13 @@ def login():
         return redirect('/')
     session['user_id'] = user_in_db.id
     session['user_name'] =f"{user_in_db.first_name} {user_in_db.last_name}" 
-    return redirect('/models')
+    return redirect('/things')
 
 @app.route('/user/show/<int:id>')
 def user_show(id):
     data = {'id': id}
     
-    return render_template('show_user.html', user=User.get_user_with_models(data))
+    return render_template('show_user.html', user=User.get_user_with_things(data))
 
 @app.route('/logout')
 def logout():
