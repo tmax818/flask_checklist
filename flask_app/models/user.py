@@ -1,5 +1,5 @@
 from flask_app.config.mysqlconnection import connectToMySQL
-from flask_app import flash, re
+from flask_app import flash, re, session
 from pprint import pprint
 from flask_app.models.thing import Thing
 
@@ -16,6 +16,8 @@ class User:
         self.things = []
         self.created_at = data['created_at']
         self.updated_at = data['updated_at']
+
+
     
     @classmethod
     def save(cls, data:dict ) -> int:
@@ -31,7 +33,7 @@ class User:
         # Didn't find a matching user
         if len(result) < 1:
             return False
-        return cls(result[0])
+        return User(result[0])
 
     @classmethod
     def get_user_with_things(cls, data:dict):
@@ -73,3 +75,7 @@ class User:
             flash("Password must be at least 8 character long.")
             is_valid = False
         return is_valid
+
+    @staticmethod
+    def logged_in():
+        return 'user_id' in session

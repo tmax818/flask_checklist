@@ -1,6 +1,7 @@
-from flask import render_template, request, redirect
+from flask import render_template, request, redirect, session
 from flask_app import app
 from flask_app.models.thing import Thing
+from flask_app.models.user import User
 
 # ! ////// CREATE  //////
 # TODO CREATE REQUIRES TWO ROUTES:
@@ -19,6 +20,8 @@ def create_thing():
 # TODO READ ALL
 @app.route('/things')
 def things():
+    if not User.logged_in():
+        return redirect('/')
     return render_template("things.html",things=Thing.get_all_with_user())
 
 # TODO READ ONE

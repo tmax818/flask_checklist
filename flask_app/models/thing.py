@@ -36,7 +36,7 @@ class Thing:
     # ! READ/RETRIEVE ALL
     @classmethod
     def get_all_with_user(cls) -> list:
-        query = "SELECT * FROM users JOIN things ON users.id = things.user_id;"
+        query = "SELECT * FROM things JOIN users ON users.id = things.user_id;"
         results = connectToMySQL(DATABASE).query_db(query)
         pprint(results)
         things = []
