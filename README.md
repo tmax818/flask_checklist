@@ -2,7 +2,10 @@
 
 # Set Up Database
 
-- [ ] create a sample [database](db/checklist.sql) to work with your sample app.
+- [ ] create a sample [database](db/template.sql) to work with your sample app.
+- [ ] The `.sql` file above will create a database from the following ERD:
+
+![ ](./flask_app/static/images/erd.png) 
 
 ## Initial Setup
 
@@ -119,7 +122,7 @@ class Thing:
     # ! CREATE
     @classmethod
     def save(cls, data:dict) -> int:
-        query = "INSERT INTO things (column1,column2,column3,column4,user_id) VALUES (%(column1)s, %(column2)s, %(column3)s, %(column4)s, %(column5)s, %(user_id)s);"
+        query = "INSERT INTO things (column1,column2,column3,column4,column5, user_id) VALUES (%(column1)s, %(column2)s, %(column3)s, %(column4)s, %(column5)s, %(user_id)s);"
         result = connectToMySQL(DATABASE).query_db(query,data)
         return result
 
@@ -136,7 +139,7 @@ class Thing:
     # ! READ/RETRIEVE ALL
     @classmethod
     def get_all_with_user(cls) -> list:
-        query = "SELECT * FROM users JOIN things ON users.id = things.user_id;"
+        query = "SELECT * FROM things JOIN users ON users.id = things.user_id;"
         results = connectToMySQL(DATABASE).query_db(query)
         pprint(results)
         things = []
@@ -154,7 +157,7 @@ class Thing:
     # ! UPDATE
     @classmethod
     def update(cls,data:dict) -> int:
-        query = "UPDATE things SET column1=%(column1)s,column2=%(column2)s,column3=%(column3)s, column4=%(column4)s,user_id=%(user_id)s WHERE id = %(id)s;"
+        query = "UPDATE things SET column1=%(column1)s,column2=%(column2)s,column3=%(column3)s, column4=%(column4)s, column5=%(column5)s, user_id=%(user_id)s WHERE id = %(id)s;"
         return connectToMySQL(DATABASE).query_db(query,data)
 
     # ! DELETE
@@ -422,64 +425,65 @@ class Thing:
 
 ### Controllers
 
-- [ ] add a [controllers](flask_app/controllers/models.py) directory:
+- [ ] add a [controllers](flask_app/controllers/things.py) directory:
 
 ```py
 from flask import render_template, request, redirect
 from flask_app import app
-from flask_app.models.model import Model
+from flask_app.models.thing import Thing
 
 # ! ////// CREATE  //////
 # TODO CREATE REQUIRES TWO ROUTES:
 # TODO ONE TO DISPLAY THE FORM:
-@app.route('/model/new')
-def new_model():
-    return render_template("new_model.html")
+@app.route('/thing/new')
+def new_thing():
+    return render_template("new_thing.html")
 
 # TODO ONE TO HANDLE THE DATA FROM THE FORM
-@app.route('/model/create',methods=['POST'])
-def create_model():
+@app.route('/thing/create',methods=['POST'])
+def create_thing():
     print(request.form)
-    Model.save(request.form)
-    return redirect('/models')
+    Thing.save(request.form)
+    return redirect('/things')
 
 # TODO READ ALL
-@app.route('/models')
-def models():
-    return render_template("models.html",models=Model.get_all())
+@app.route('/things')
+def things():
+    return render_template("things.html",things=Thing.get_all_with_user())
 
 # TODO READ ONE
-@app.route('/model/show/<int:id>')
-def show_models(id):
+@app.route('/thing/show/<int:id>')
+def show_things(id):
     data ={ 
         "id":id
     }
-    return render_template("show_model.html",model=Model.get_one(data))
+    return render_template("show_thing.html",thing=Thing.get_one(data))
 
 # ! ///// UPDATE /////
 # TODO UPDATE REQUIRES TWO ROUTES
 # TODO ONE TO SHOW THE FORM
-@app.route('/model/edit/<int:id>')
-def edit_model(id):
+@app.route('/thing/edit/<int:id>')
+def edit_thing(id):
     data ={ 
         "id":id
     }
-    return render_template("edit_model.html",model=Model.get_one(data))
+    return render_template("edit_thing.html",thing=Thing.get_one(data))
 
 # TODO ONE TO HANDLE THE DATA FROM THE FORM
-@app.route('/model/update',methods=['POST'])
-def update_model():
-    Model.update(request.form)
-    return redirect('/models')
+@app.route('/thing/update',methods=['POST'])
+def update_thing():
+    Thing.update(request.form)
+    return redirect('/things')
 
 # ! ///// DELETE //////
-@app.route('/model/destroy/<int:id>')
-def destroy_model(id):
+@app.route('/thing/destroy/<int:id>')
+def destroy_thing(id):
     data ={
         'id': id
     }
-    Model.destroy(data)
-    return redirect('/models')
+    Thing.destroy(data)
+    return redirect('/things')
+
 ```
 
 
@@ -530,8 +534,8 @@ def register():
     }
     user_id = User.save(data)
     session['user_id'] = user_id
-    session['user_name'] = request.form['first_name']
-    return redirect('/models')
+    session['user_name'] = f"{request.form['first_name']} {request.form['last_name']}"
+    return redirect('/things')
 
 @app.route('/login', methods=['post'])
 def login():
@@ -541,17 +545,23 @@ def login():
         flash('invalid credentials')
         return redirect('/')
     if not bcrypt.check_password_hash(user_in_db.password, request.form['password']):
+        flash('invalid credentials')
         return redirect('/')
     session['user_id'] = user_in_db.id
-    session['first_name'] = user_in_db.first_name
-    return redirect('/models')
+    session['user_name'] =f"{user_in_db.first_name} {user_in_db.last_name}" 
+    return redirect('/things')
 
-
+@app.route('/user/show/<int:id>')
+def user_show(id):
+    data = {'id': id}
+    
+    return render_template('show_user.html', user=User.get_user_with_things(data))
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
+
 ```
 
 - [ ] add a [user.py](flask_app/models/user.py) model with the following content:
@@ -559,9 +569,10 @@ def logout():
 ```py
 from flask_app.config.mysqlconnection import connectToMySQL
 from flask_app import flash, re
+from pprint import pprint
+from flask_app.models.thing import Thing
 
-
-DATABASE = 'checklist'
+DATABASE = 'template'
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$') 
 
 class User:
@@ -571,6 +582,7 @@ class User:
         self.last_name = data['last_name']
         self.email = data['email']
         self.password = data['password']
+        self.things = []
         self.created_at = data['created_at']
         self.updated_at = data['updated_at']
     
@@ -590,6 +602,28 @@ class User:
             return False
         return cls(result[0])
 
+    @classmethod
+    def get_user_with_things(cls, data:dict):
+        query = "SELECT * FROM users LEFT JOIN things ON users.id = things.user_id WHERE users.id = %(id)s;"
+        results = connectToMySQL(DATABASE).query_db(query,data)
+        pprint(results)
+        user = cls(results[0])
+        for result in results:
+            thing_dict = {
+                'id': result['things.id'],
+                'column1': result['column1'],
+                'column2': result['column2'],
+                'column3': result['column3'],
+                'column4': result['column4'],
+                'column5': result['column5'],
+                'user_id': result['user_id'],
+                'created_at': result['things.created_at'],
+                'updated_at': result['things.updated_at']
+            }
+            user.things.append(Thing(thing_dict))
+        return user
+
+
     @staticmethod
     def validate_user(user:dict) -> bool:
         is_valid = True # ! we assume this is true
@@ -605,7 +639,11 @@ class User:
         if user['password'] != user['confirm-password']:
             flash("Passwords do not match")
             is_valid = False
+        if len(user['password']) < 8:
+            flash("Password must be at least 8 character long.")
+            is_valid = False
         return is_valid
+
 ```
 
 
