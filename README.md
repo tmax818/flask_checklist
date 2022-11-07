@@ -22,12 +22,12 @@ pipenv shell
 
 ```py
 from flask_app import app
-from flask_app.controllers import models, users
+from flask_app.controllers import things, users
 
 if __name__=="__main__":    
     app.run(debug=True)
 ```
-**[server.py](server.py) is subject to SEVERAL modifications!!!**
+
 
 - [ ] create database connection with [mysqlconnection.py](flask_app/config/mysqlconnection.py) with the following content:
 
@@ -88,27 +88,30 @@ from flask import Flask, session, flash
 from flask_bcrypt import Bcrypt
 import re
 app = Flask(__name__)
-
-
-app.secret_key = "asdfasdf a sdfasd fadsfasdfasdf"
+app.secret_key = "This can be any string you want"
 
 bcrypt = Bcrypt(app)
 ```
 ### Models
 
-- [ ] add a [models](flask_app/models/model.py) directory with the following content:
+- [ ] add a [models](flask_app/models/thing.py) directory with the following content:
 
 ```py
 from flask_app.config.mysqlconnection import connectToMySQL
+from pprint import pprint
+DATABASE = 'template'
 
-DATABASE = 'checklist'
-
-class Model:
+class Thing:
     def __init__(self, data:dict) -> None:
         self.id = data['id']
         self.column1 = data['column1']
         self.column2 = data['column2']
         self.column3 = data['column3']
+        self.column4 = data['column4']
+        self.column5 = data['column5']
+        self.user_id = data['user_id']
+        if 'first_name' in data:
+            self.user = data['first_name']
         self.created_at = data['created_at']
         self.updated_at = data['updated_at']
 
@@ -116,37 +119,48 @@ class Model:
     # ! CREATE
     @classmethod
     def save(cls, data:dict) -> int:
-        query = "INSERT INTO models (column1,column2,column3) VALUES (%(column1)s,%(column2)s,%(column3)s);"
+        query = "INSERT INTO things (column1,column2,column3,column4,user_id) VALUES (%(column1)s, %(column2)s, %(column3)s, %(column4)s, %(column5)s, %(user_id)s);"
         result = connectToMySQL(DATABASE).query_db(query,data)
         return result
 
     # ! READ/RETRIEVE ALL
     @classmethod
     def get_all(cls) -> list:
-        query = "SELECT * FROM models;"
+        query = "SELECT * FROM things;"
         results = connectToMySQL(DATABASE).query_db(query)
-        models = []
+        things = []
         for u in results:
-            models.append( cls(u) )
-        return models
+            things.append( cls(u) )
+        return things
+ 
+    # ! READ/RETRIEVE ALL
+    @classmethod
+    def get_all_with_user(cls) -> list:
+        query = "SELECT * FROM users JOIN things ON users.id = things.user_id;"
+        results = connectToMySQL(DATABASE).query_db(query)
+        pprint(results)
+        things = []
+        for u in results:
+            things.append( cls(u) )
+        return things
     
     # ! READ/RETRIEVE ONE
     @classmethod
     def get_one(cls,data:dict) -> object:
-        query  = "SELECT * FROM models WHERE id = %(id)s;"
+        query  = "SELECT * FROM things WHERE id = %(id)s;"
         result = connectToMySQL(DATABASE).query_db(query,data)
         return cls(result[0])
 
     # ! UPDATE
     @classmethod
     def update(cls,data:dict) -> int:
-        query = "UPDATE models SET column1=%(column1)s,column2=%(column2)s,column3=%(column3)s,updated_at=NOW() WHERE id = %(id)s;"
+        query = "UPDATE things SET column1=%(column1)s,column2=%(column2)s,column3=%(column3)s, column4=%(column4)s,user_id=%(user_id)s WHERE id = %(id)s;"
         return connectToMySQL(DATABASE).query_db(query,data)
 
     # ! DELETE
     @classmethod
     def destroy(cls,data:dict):
-        query  = "DELETE FROM models WHERE id = %(id)s;"
+        query  = "DELETE FROM things WHERE id = %(id)s;"
         return connectToMySQL(DATABASE).query_db(query,data)
 ```
 

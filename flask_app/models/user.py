@@ -46,6 +46,7 @@ class User:
                 'column2': result['column2'],
                 'column3': result['column3'],
                 'column4': result['column4'],
+                'column5': result['column5'],
                 'user_id': result['user_id'],
                 'created_at': result['things.created_at'],
                 'updated_at': result['things.updated_at']
