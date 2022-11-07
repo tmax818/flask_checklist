@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect
+from flask import render_template, request, redirect, session
 from flask_app import app
 from flask_app.models.thing import Thing
 
@@ -19,6 +19,8 @@ def create_thing():
 # TODO READ ALL
 @app.route('/things')
 def things():
+    if 'user_id' not in session:
+        return redirect('/logout')
     return render_template("things.html",things=Thing.get_all_with_user())
 
 # TODO READ ONE
