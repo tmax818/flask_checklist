@@ -29,7 +29,7 @@ def show_things(id):
     data ={ 
         "id":id
     }
-    return render_template("show_thing.html",thing=Thing.get_one(data))
+    return render_template("show_thing.html",thing=Thing.get_one_with_user(data))
 
 # ! ///// UPDATE /////
 # TODO UPDATE REQUIRES TWO ROUTES

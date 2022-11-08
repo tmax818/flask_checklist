@@ -52,6 +52,12 @@ class Thing:
         result = connectToMySQL(DATABASE).query_db(query,data)
         return cls(result[0])
 
+    @classmethod
+    def get_one_with_user(cls,data:dict) -> object:
+        query  = "SELECT * FROM things JOIN users ON users.id = things.user_id WHERE things.id = %(id)s;"
+        result = connectToMySQL(DATABASE).query_db(query,data)
+        return cls(result[0])
+
     # ! UPDATE
     @classmethod
     def update(cls,data:dict) -> int:

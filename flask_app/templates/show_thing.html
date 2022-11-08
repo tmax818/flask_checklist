@@ -12,14 +12,12 @@
         <div class="float-end mt-3 mb-3">
             <a class="btn btn-danger" href="/logout">logout</a>
             <a class="btn btn-secondary" href="/things">home</a>
+            <a href="/thing/new" class="btn btn-primary">Add a thing</a>
         </div>
-        <h2 class="text-center">thing {{thing.id}}</h2>
-        <p>column1 {{thing.column1}}</p>
+        <h2 class="text-center">thing {{thing.column1}}</h2>
+        <p>column1 {{thing.user}}</p>
         <p>column2: {{thing.column2}}</p>
         <p>column3: {{thing.column3}}</p>
-        
-        <p>Created ON: {{thing.created_at.strftime("%b %d %Y")}}</p>
-        <p>Last Updated: {{  thing.updated_at.strftime("%b %d %Y")}}</p>
     </div>
 </body>
 </html>
