@@ -7,6 +7,8 @@ from flask_app.models.thing import Thing
 # TODO ONE TO DISPLAY THE FORM:
 @app.route('/thing/new')
 def new_thing():
+    if 'user_id' not in session:
+        return redirect('/')
     return render_template("new_thing.html")
 
 # TODO ONE TO HANDLE THE DATA FROM THE FORM
