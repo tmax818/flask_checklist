@@ -37,19 +37,19 @@
                         <td>{{ thing.column2 }}</td>
                         <td>{{ thing.column3}}</td>
                         <td>{{ thing.column4}}</td>
-                        <td>{{ thing.user}}</td>
+                        <td>{{ thing.first_name}}</td>
                     <td>{{ thing.created_at.strftime("%b %d %Y") }}</td>
                     <td>
-                        <a href="/thing/show/{{ thing.id }}">Show</a> |
-                        <a href="/thing/edit/{{ thing.id }}">Edit</a> |
-                        <a href="/thing/destroy/{{ thing.id }}">Delete</a>
+                        <a href="/things/show/{{ thing.id }}">Show</a> |
+                        <a href="/things/edit/{{ thing.id }}">Edit</a> |
+                        <a href="/things/destroy/{{ thing.id }}">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <a href="/thing/new" class="btn btn-primary">Add a thing</a>
-        <a href="/user/show/{{session['user_id']}}" class="btn btn-primary">view your things</a>
+        <a href="/things/new" class="btn btn-primary">Add a thing</a>
+        <a href="/users/show/{{session['user_id']}}" class="btn btn-primary">view your things</a>
     </div>
 
 </body>

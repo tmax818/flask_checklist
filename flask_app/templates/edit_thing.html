@@ -14,7 +14,7 @@
             <a class="btn btn-danger" href="/logout">logout</a>
             <a class="btn btn-secondary" href="/things">home</a>
         </div>
-        <form action="/thing/update" method="post" class="col-6 mx-auto">
+        <form action="/things/update" method="post" class="col-6 mx-auto">
             <h2 class="text-center">Edit {{thing.id}}</h2>
         <input type="hidden" name="id" value={{thing.id}}>
         <input type="hidden" name="user_id" value="{{session['user_id']}}">

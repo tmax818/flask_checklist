@@ -38,7 +38,7 @@ def login():
     session['user_name'] =f"{user_in_db.first_name} {user_in_db.last_name}" 
     return redirect('/things')
 
-@app.route('/user/show/<int:id>')
+@app.route('/users/show/<int:id>')
 def user_show(id):
     data = {'id': id}
     
