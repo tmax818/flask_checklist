@@ -12,7 +12,7 @@ class Thing:
         self.column5 = data['column5']
         self.user_id = data['user_id']
         if 'first_name' in data:
-            self.user = data['first_name']
+            self.first_name = data['first_name']
         self.created_at = data['created_at']
         self.updated_at = data['updated_at']
 
@@ -48,8 +48,9 @@ class Thing:
     # ! READ/RETRIEVE ONE
     @classmethod
     def get_one(cls,data:dict) -> object:
-        query  = "SELECT * FROM things WHERE id = %(id)s;"
+        query  = "SELECT * FROM things JOIN users ON things.user_id = users.id WHERE things.id = %(id)s;"
         result = connectToMySQL(DATABASE).query_db(query,data)
+        pprint(result)
         return cls(result[0])
 
     # ! UPDATE
